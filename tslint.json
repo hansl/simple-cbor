@@ -1,0 +1,50 @@
+{
+  "rules": {
+    // ==================================================================================================
+    // base tslint rules
+    "arrow-return-shorthand": true,
+    "no-duplicate-imports": true,
+    "no-angle-bracket-type-assertion": true,
+    "no-conditional-assignment": true,
+    "no-non-null-assertion": true,
+    "no-unnecessary-qualifier": true,
+    "no-string-throw": true,
+    "encoding": true,
+    "no-floating-promises": true,
+    "no-implicit-dependencies": true,
+    "no-import-side-effect": [true, {"ignore-module": "^(?!rxjs\/)"}],
+    "no-inferrable-types": true,
+    "class-name": true,
+    "comment-format": [
+      true,
+      "check-space"
+    ],
+    "match-default-export-name": true,
+    "newline-before-return": true,
+    "no-duplicate-variable": true,
+    "no-eval": true,
+    "no-any": true,
+    "no-arg": true,
+    "no-debugger": true,
+    "no-console": true,
+    "no-internal-module": true,
+    "no-unused-expression": true,
+    "no-var-keyword": true,
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "lowercase-last",
+        "named-imports-order": "lowercase-last"
+      }
+    ],
+    "prefer-const": true,
+    "curly": true,
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ]
+  }
+}

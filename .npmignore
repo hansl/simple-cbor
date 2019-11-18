@@ -1,0 +1,11 @@
+# Source files
+**/*.ts
+!**/*.d.ts
+
+.editorconfig
+.idea/
+.git/
+.gitignore
+tslint.json
+tsconfig.json
+jest.config.js
