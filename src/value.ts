@@ -1,4 +1,4 @@
-export type CborValue = Uint8Array & {
+export type CborValue = ArrayBuffer & {
   __brand: "CBOR";
 };
 
@@ -21,17 +21,17 @@ const enum MinorType {
 
 const MAX_U64_NUMBER = 0x20000000000000;
 
-function _concat(a: Uint8Array, ...args: Uint8Array[]): CborValue {
+function _concat(a: ArrayBuffer, ...args: ArrayBuffer[]): CborValue {
   const newBuffer = new Uint8Array(a.byteLength + args.reduce((acc, b) => acc + b.byteLength, 0));
 
-  newBuffer.set(a, 0);
+  newBuffer.set(new Uint8Array(a), 0);
   let i = a.byteLength;
   for (const b of args) {
-    newBuffer.set(b, i);
+    newBuffer.set(new Uint8Array(b), i);
     i += b.byteLength;
   }
 
-  return newBuffer as CborValue;
+  return newBuffer.buffer as CborValue;
 }
 
 function _serializeValue(major: MajorType, minor: MinorType, value: string): CborValue {
@@ -45,12 +45,12 @@ function _serializeValue(major: MajorType, minor: MinorType, value: string): Cbo
   value = value.slice(-length * 2).padStart(length * 2, "0");
   const bytes = [(major << 5) + minor].concat(value.match(/../g)!.map(byte => parseInt(byte, 16)));
 
-  return new Uint8Array(bytes) as CborValue;
+  return new Uint8Array(bytes).buffer as CborValue;
 }
 
-function _serializeNumber(major: MajorType, value: number) {
+function _serializeNumber(major: MajorType, value: number): CborValue {
   if (value < 24) {
-    return new Uint8Array([(major << 5) + value]);
+    return new Uint8Array([(major << 5) + value]).buffer as CborValue;
   } else {
     const minor =
       value <= 0xff
@@ -88,13 +88,16 @@ function _serializeString(str: string) {
     }
   }
 
-  return _concat(_serializeNumber(MajorType.TextString, str.length), new Uint8Array(utf8));
+  return _concat(
+    new Uint8Array(_serializeNumber(MajorType.TextString, str.length)),
+    new Uint8Array(utf8),
+  );
 }
 
 /**
  * Tag a value.
  */
-export function tagged(tag: number, value: Uint8Array): CborValue {
+export function tagged(tag: number, value: CborValue): CborValue {
   if (tag == 0xd9d9f7) {
     return _concat(new Uint8Array([0xd9, 0xd9, 0xf7]), value);
   }
@@ -120,7 +123,7 @@ export function tagged(tag: number, value: Uint8Array): CborValue {
       value.match(/../g)!.map(byte => parseInt(byte, 16))
     );
 
-    return new Uint8Array(bytes) as CborValue;
+    return new Uint8Array(bytes).buffer as CborValue;
   }
 }
 
@@ -130,7 +133,7 @@ export function tagged(tag: number, value: Uint8Array): CborValue {
  * @param bytes A buffer containing the value.
  */
 export function raw(bytes: Uint8Array): CborValue {
-  return new Uint8Array(bytes) as CborValue;
+  return new Uint8Array(bytes).buffer as CborValue;
 }
 
 /**
@@ -143,7 +146,7 @@ export function uSmall(n: number): CborValue {
   }
   n = Math.min(Math.max(0, n), 23); // Clamp it.
   const bytes = [(MajorType.UnsignedInteger << 5) + n];
-  return new Uint8Array(bytes) as CborValue;
+  return new Uint8Array(bytes).buffer as CborValue;
 }
 
 /**
@@ -258,7 +261,7 @@ export function iSmall(n: number): CborValue {
   // Negative n, clamped to [1, 24], minus 1 (there's no negative 0).
   n = Math.min(Math.max(0, -n), 24) - 1;
   const bytes = [(MajorType.SignedInteger << 5) + n];
-  return new Uint8Array(bytes) as CborValue;
+  return new Uint8Array(bytes).buffer as CborValue;
 }
 
 /**
@@ -405,8 +408,11 @@ export function number(n: number): CborValue {
 /**
  * Encode a byte array. This is different than the `raw()` method.
  */
-export function bytes(bytes: Uint8Array): CborValue {
-  return _concat(_serializeNumber(MajorType.ByteString, bytes.byteLength), bytes);
+export function bytes(bytes: ArrayBuffer): CborValue {
+  return _concat(
+    _serializeNumber(MajorType.ByteString, bytes.byteLength),
+    bytes,
+  );
 }
 
 /**
@@ -420,7 +426,10 @@ export function string(str: string): CborValue {
  * Encode an array of cbor values.
  */
 export function array(items: CborValue[]): CborValue {
-  return _concat(_serializeNumber(MajorType.Array, items.length), ...items);
+  return _concat(
+    _serializeNumber(MajorType.Array, items.length),
+    ...items,
+  );
 }
 
 /**
@@ -434,7 +443,10 @@ export function map(items: Map<string, CborValue> | { [key: string]: CborValue }
 
   return _concat(
     _serializeNumber(MajorType.Map, items.size),
-    ...Array.from(items.entries()).map(([k, v]) => _concat(_serializeString(k), v))
+    ...Array.from(items.entries()).map(([k, v]) => _concat(
+      _serializeString(k),
+      v,
+    ))
   );
 }
 

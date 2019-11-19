@@ -9,6 +9,18 @@ export interface CborEncoder<T> {
   encode(value: T): cbor.CborValue;
 }
 
+const BufferClasses = [
+  ArrayBuffer,
+  Uint8Array,
+  Uint16Array,
+  Uint32Array,
+  Int8Array,
+  Int16Array,
+  Int32Array,
+  Float32Array,
+  Float64Array,
+];
+
 export class JsonDefaultCborEncoder implements CborEncoder<any> {
   constructor(private _serializer: CborSerializer) {}
 
@@ -37,10 +49,16 @@ export class JsonDefaultCborEncoder implements CborEncoder<any> {
           return cbor.null_();
         } else if (Array.isArray(value)) {
           return cbor.array(value.map(x => this._serializer.serializeValue(x)));
-        } else if (value instanceof ArrayBuffer) {
-          return cbor.bytes(new Uint8Array(value));
+        } else if (BufferClasses.find(x => value instanceof x)) {
+          return cbor.bytes(value.buffer);
         } else if (Object.getOwnPropertyNames(value).indexOf("toJSON") !== -1) {
           return this.encode(value.toJSON());
+        } else if (value instanceof Map) {
+          const m = new Map<string, cbor.CborValue>();
+          for (const [key, item] of value.entries()) {
+            m.set(key, this._serializer.serializeValue(item));
+          }
+          return cbor.map(m);
         } else {
           const m = new Map<string, cbor.CborValue>();
           for (const [key, item] of Object.entries(value)) {
@@ -112,17 +130,17 @@ export class CborSerializer {
     return this.getEncoderFor(value).encode(value);
   }
 
-  serialize(value: any): Uint8Array {
+  serialize(value: any): ArrayBuffer {
     return this.serializeValue(value);
   }
 }
 
 export class SelfDescribeCborSerializer extends CborSerializer {
-  serialize(value: any): Uint8Array {
-    return new Uint8Array([
+  serialize(value: any): ArrayBuffer {
+    return cbor.raw(new Uint8Array([
       // Self describe CBOR.
       ...new Uint8Array([0xd9, 0xd9, 0xf7]),
-      ...this.serializeValue(value)
-    ]);
+      ...new Uint8Array(super.serializeValue(value)),
+    ]));
   }
 }

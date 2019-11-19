@@ -1,8 +1,8 @@
 import { CborSerializer } from "../src";
 import { DateNumberEncoder, DateStringEncoder } from "./date";
 
-function _toHex(arr: Uint8Array) {
-  return arr.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+function _toHex(arr: ArrayBuffer) {
+  return new Uint8Array(arr).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 }
 
 test('date (str)', () => {

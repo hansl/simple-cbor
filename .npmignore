@@ -6,6 +6,7 @@
 .idea/
 .git/
 .gitignore
+incremental.json
 tslint.json
 tsconfig.json
 jest.config.js

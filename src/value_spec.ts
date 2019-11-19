@@ -1,7 +1,8 @@
 import * as cbor from "./value";
+import { CborValue } from "./value";
 
-function _toHex(arr: Uint8Array) {
-  return arr.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+function _toHex(arr: CborValue) {
+  return new Uint8Array(arr).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 }
 
 test("u Small", () => {
