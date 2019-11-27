@@ -1,25 +1,8 @@
+import { MajorType, MAX_U64_NUMBER, MinorType } from "./constants";
+
 export type CborValue = ArrayBuffer & {
   __brand: "CBOR";
 };
-
-const enum MajorType {
-  UnsignedInteger = 0,
-  SignedInteger = 1,
-  ByteString = 2,
-  TextString = 3,
-  Array = 4,
-  Map = 5,
-  Tag = 6,
-  SimpleValue = 7
-}
-const enum MinorType {
-  Int8 = 24,
-  Int16 = 25,
-  Int32 = 26,
-  Int64 = 27
-}
-
-const MAX_U64_NUMBER = 0x20000000000000;
 
 function _concat(a: ArrayBuffer, ...args: ArrayBuffer[]): CborValue {
   const newBuffer = new Uint8Array(a.byteLength + args.reduce((acc, b) => acc + b.byteLength, 0));
@@ -43,14 +26,14 @@ function _serializeValue(major: MajorType, minor: MinorType, value: string): Cbo
   // Create the buffer from the value with left padding with 0.
   const length = 2 ** (minor - MinorType.Int8);
   value = value.slice(-length * 2).padStart(length * 2, "0");
-  const bytes = [(major << 5) + minor].concat(value.match(/../g)!.map(byte => parseInt(byte, 16)));
+  const bytes = [major + minor].concat(value.match(/../g)!.map(byte => parseInt(byte, 16)));
 
   return new Uint8Array(bytes).buffer as CborValue;
 }
 
 function _serializeNumber(major: MajorType, value: number): CborValue {
   if (value < 24) {
-    return new Uint8Array([(major << 5) + value]).buffer as CborValue;
+    return new Uint8Array([major + value]).buffer as CborValue;
   } else {
     const minor =
       value <= 0xff
@@ -103,7 +86,7 @@ export function tagged(tag: number, value: CborValue): CborValue {
   }
 
   if (tag < 24) {
-    return _concat(new Uint8Array([(MajorType.Tag << 5) + tag]), value);
+    return _concat(new Uint8Array([MajorType.Tag + tag]), value);
   } else {
     const minor =
       tag <= 0xff
@@ -119,7 +102,7 @@ export function tagged(tag: number, value: CborValue): CborValue {
       .toString(16)
       .slice(-length * 2)
       .padStart(length * 2, "0");
-    const bytes = [(MajorType.Tag << 5) + minor].concat(
+    const bytes = [MajorType.Tag + minor].concat(
       value.match(/../g)!.map(byte => parseInt(byte, 16))
     );
 
@@ -145,7 +128,7 @@ export function uSmall(n: number): CborValue {
     throw new RangeError("Invalid number.");
   }
   n = Math.min(Math.max(0, n), 23); // Clamp it.
-  const bytes = [(MajorType.UnsignedInteger << 5) + n];
+  const bytes = [MajorType.UnsignedInteger + n];
   return new Uint8Array(bytes).buffer as CborValue;
 }
 
@@ -260,7 +243,7 @@ export function iSmall(n: number): CborValue {
 
   // Negative n, clamped to [1, 24], minus 1 (there's no negative 0).
   n = Math.min(Math.max(0, -n), 24) - 1;
-  const bytes = [(MajorType.SignedInteger << 5) + n];
+  const bytes = [MajorType.SignedInteger + n];
   return new Uint8Array(bytes).buffer as CborValue;
 }
 
@@ -456,7 +439,7 @@ export function map(items: Map<string, CborValue> | { [key: string]: CborValue }
 export function singleFloat(f: number): CborValue {
   const single = new Float32Array([f]);
   return _concat(
-    new Uint8Array([(MajorType.SimpleValue << 5) + 26]),
+    new Uint8Array([MajorType.SimpleValue + 26]),
     new Uint8Array(single.buffer)
   );
 }
@@ -467,7 +450,7 @@ export function singleFloat(f: number): CborValue {
 export function doubleFloat(f: number): CborValue {
   const single = new Float64Array([f]);
   return _concat(
-    new Uint8Array([(MajorType.SimpleValue << 5) + 27]),
+    new Uint8Array([MajorType.SimpleValue + 27]),
     new Uint8Array(single.buffer)
   );
 }
@@ -480,26 +463,26 @@ export function bool(v: boolean): CborValue {
  * Encode the boolean true.
  */
 export function true_(): CborValue {
-  return raw(new Uint8Array([(MajorType.SimpleValue << 5) + 21]));
+  return raw(new Uint8Array([MajorType.SimpleValue + 21]));
 }
 
 /**
  * Encode the boolean false.
  */
 export function false_(): CborValue {
-  return raw(new Uint8Array([(MajorType.SimpleValue << 5) + 20]));
+  return raw(new Uint8Array([MajorType.SimpleValue + 20]));
 }
 
 /**
  * Encode the constant null.
  */
 export function null_(): CborValue {
-  return raw(new Uint8Array([(MajorType.SimpleValue << 5) + 22]));
+  return raw(new Uint8Array([MajorType.SimpleValue + 22]));
 }
 
 /**
  * Encode the constant undefined.
  */
 export function undefined_(): CborValue {
-  return raw(new Uint8Array([(MajorType.SimpleValue << 5) + 23]));
+  return raw(new Uint8Array([MajorType.SimpleValue + 23]));
 }
