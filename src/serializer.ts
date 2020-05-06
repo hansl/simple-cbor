@@ -22,7 +22,10 @@ const BufferClasses = [
 ];
 
 export class JsonDefaultCborEncoder implements CborEncoder<any> {
-  constructor(private _serializer: CborSerializer) {}
+  // @param _serializer The CBOR Serializer to use.
+  // @param _stable Whether or not keys from objects should be sorted (stable). This is
+  //     particularly useful when testing encodings between JSON objects.
+  constructor(private _serializer: CborSerializer, private _stable = false) {}
 
   readonly name = "jsonDefault";
   readonly priority = -100;
@@ -48,8 +51,8 @@ export class JsonDefaultCborEncoder implements CborEncoder<any> {
         if (value === null) {
           return cbor.null_();
         } else if (Array.isArray(value)) {
-          return cbor.array(value.map(x => this._serializer.serializeValue(x)));
-        } else if (BufferClasses.find(x => value instanceof x)) {
+          return cbor.array(value.map((x) => this._serializer.serializeValue(x)));
+        } else if (BufferClasses.find((x) => value instanceof x)) {
           return cbor.bytes(value.buffer);
         } else if (Object.getOwnPropertyNames(value).indexOf("toJSON") !== -1) {
           return this.encode(value.toJSON());
@@ -58,13 +61,13 @@ export class JsonDefaultCborEncoder implements CborEncoder<any> {
           for (const [key, item] of value.entries()) {
             m.set(key, this._serializer.serializeValue(item));
           }
-          return cbor.map(m);
+          return cbor.map(m, this._stable);
         } else {
           const m = new Map<string, cbor.CborValue>();
           for (const [key, item] of Object.entries(value)) {
             m.set(key, this._serializer.serializeValue(item));
           }
-          return cbor.map(m);
+          return cbor.map(m, this._stable);
         }
       default:
         throw new Error("Invalid value.");
@@ -87,10 +90,10 @@ export class ToCborEncoder implements CborEncoder<{ toCBOR(): cbor.CborValue }> 
 export class CborSerializer {
   private _encoders = new Set<CborEncoder<any>>();
 
-  static withDefaultEncoders() {
+  static withDefaultEncoders(stable = false) {
     const s = new this();
 
-    s.addEncoder(new JsonDefaultCborEncoder(s));
+    s.addEncoder(new JsonDefaultCborEncoder(s, stable));
     s.addEncoder(new ToCborEncoder());
 
     return s;
@@ -137,10 +140,12 @@ export class CborSerializer {
 
 export class SelfDescribeCborSerializer extends CborSerializer {
   serialize(value: any): ArrayBuffer {
-    return cbor.raw(new Uint8Array([
-      // Self describe CBOR.
-      ...new Uint8Array([0xd9, 0xd9, 0xf7]),
-      ...new Uint8Array(super.serializeValue(value)),
-    ]));
+    return cbor.raw(
+      new Uint8Array([
+        // Self describe CBOR.
+        ...new Uint8Array([0xd9, 0xd9, 0xf7]),
+        ...new Uint8Array(super.serializeValue(value)),
+      ])
+    );
   }
 }

@@ -12,7 +12,7 @@ test("u Small", () => {
     [22, "16"],
     [23, "17"],
     [24, "17"],
-    [90, "17"] // Clamped.
+    [90, "17"], // Clamped.
   ];
 
   for (const [value, expected] of testCases) {
@@ -25,7 +25,7 @@ test("u8", () => {
   const testCases: [number, string][] = [
     [0, "1800"],
     [90, "185a"],
-    [900, "18ff"] // Clamped.
+    [900, "18ff"], // Clamped.
   ];
 
   for (const [value, expected] of testCases) {
@@ -39,7 +39,7 @@ test("u16", () => {
     [0, "190000"],
     [90, "19005a"],
     [9000, "192328"],
-    [90000, "19ffff"]
+    [90000, "19ffff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -58,7 +58,7 @@ test("u32", () => {
     [9000000, "1a00895440"],
     [90000000, "1a055d4a80"],
     [900000000, "1a35a4e900"],
-    [9000000000, "1affffffff"]
+    [9000000000, "1affffffff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -78,7 +78,7 @@ test("u64", () => {
     [90000000, "1b00000000055d4a80"],
     [900000000, "1b0000000035a4e900"],
     [9000000000, "1b0000000218711a00"],
-    [90000000000, "1b00000014f46b0400"]
+    [90000000000, "1b00000014f46b0400"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -99,7 +99,7 @@ test("u64 (str)", () => {
     ["900000000", 10, "1b0000000035a4e900"],
     ["9000000000", 10, "1b0000000218711a00"],
     ["90000000000", 10, "1b00000014f46b0400"],
-    ["0123456789ABCDEF", 16, "1b0123456789abcdef"]
+    ["0123456789ABCDEF", 16, "1b0123456789abcdef"],
   ];
 
   for (const [value, radix, expected] of testCases) {
@@ -115,7 +115,7 @@ test("i Small", () => {
     [-23, "36"],
     [-24, "37"],
     [-25, "37"],
-    [-90, "37"]
+    [-90, "37"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -131,7 +131,7 @@ test("i8", () => {
     [-254, "38fd"],
     [-255, "38fe"],
     [-256, "38ff"],
-    [-257, "38ff"]
+    [-257, "38ff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -147,7 +147,7 @@ test("i16", () => {
     [-9000, "392327"],
     [-65535, "39fffe"],
     [-65536, "39ffff"],
-    [-90000, "39ffff"]
+    [-90000, "39ffff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -169,7 +169,7 @@ test("i32", () => {
     [-0xfffffffe, "3afffffffd"],
     [-0xffffffff, "3afffffffe"],
     [-0x100000000, "3affffffff"],
-    [-0x100000001, "3affffffff"]
+    [-0x100000001, "3affffffff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -190,7 +190,7 @@ test("i64", () => {
     [-90000000, "3b00000000055d4a7f"],
     [-900000000, "3b0000000035a4e8ff"],
     [-9000000000, "3b00000002187119ff"],
-    [-90000000000, "3b00000014f46b03ff"]
+    [-90000000000, "3b00000014f46b03ff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -214,7 +214,7 @@ test("i64 (str)", () => {
     ["-90000000000", 10, "3b00000014f46b03ff"],
     ["-0123456789ABCDEF", 16, "3b0123456789abcdee"],
     ["-0123456000000000", 16, "3b0123455fffffffff"],
-    ["-0000000000000000", 16, "1b0000000000000000"]
+    ["-0000000000000000", 16, "1b0000000000000000"],
   ];
 
   for (const [value, radix, expected] of testCases) {
@@ -246,7 +246,7 @@ test("generic numbers", () => {
     [-90000000, "3a055d4a7f"],
     [-900000000, "3a35a4e8ff"],
     [-9000000000, "3b00000002187119ff"],
-    [-90000000000, "3b00000014f46b03ff"]
+    [-90000000000, "3b00000014f46b03ff"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -260,20 +260,20 @@ test("getBytes", () => {
     [[1, 2, 3], "43010203"],
     [
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-      "540102030405060708090a0b0c0d0e0f1011121314"
+      "540102030405060708090a0b0c0d0e0f1011121314",
     ],
     [
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-      "570102030405060708090a0b0c0d0e0f1011121314151617"
+      "570102030405060708090a0b0c0d0e0f1011121314151617",
     ],
     [
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-      "58180102030405060708090a0b0c0d0e0f101112131415161718"
+      "58180102030405060708090a0b0c0d0e0f101112131415161718",
     ],
     [
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-      "58190102030405060708090a0b0c0d0e0f10111213141516171819"
-    ]
+      "58190102030405060708090a0b0c0d0e0f10111213141516171819",
+    ],
   ];
 
   for (const [value, expected] of testCases) {
@@ -288,7 +288,7 @@ test("string", () => {
     ["ABCDEFGHIJ", "6a4142434445464748494a"],
     ["ABCDEFGHIJKLMNOPQRSTUVW", "774142434445464748494a4b4c4d4e4f5051525354555657"],
     ["ABCDEFGHIJKLMNOPQRSTUVWX", "78184142434445464748494a4b4c4d4e4f505152535455565758"],
-    ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "781a4142434445464748494a4b4c4d4e4f505152535455565758595a"]
+    ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "781a4142434445464748494a4b4c4d4e4f505152535455565758595a"],
   ];
 
   for (const [value, expected] of testCases) {
@@ -317,13 +317,23 @@ test("map (2)", () => {
   expect(hex).toBe("a16141a161421810");
 });
 
+test("map (stable = false)", () => {
+  const hex = _toHex(cbor.map({ B: cbor.u8(16), A: cbor.u8(15) }));
+  expect(hex).toBe("a2614218106141180f");
+});
+
+test("map (stable = true)", () => {
+  const hex = _toHex(cbor.map({ B: cbor.u8(16), A: cbor.u8(15) }, true));
+  expect(hex).toBe("a26141180f61421810");
+});
+
 test("simple values", () => {
   const hex = _toHex(
     cbor.map({
       F: cbor.false_(),
       T: cbor.true_(),
       N: cbor.null_(),
-      U: cbor.undefined_()
+      U: cbor.undefined_(),
     })
   );
 

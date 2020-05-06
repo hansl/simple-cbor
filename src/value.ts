@@ -10,13 +10,13 @@ const enum MajorType {
   Array = 4,
   Map = 5,
   Tag = 6,
-  SimpleValue = 7
+  SimpleValue = 7,
 }
 const enum MinorType {
   Int8 = 24,
   Int16 = 25,
   Int32 = 26,
-  Int64 = 27
+  Int64 = 27,
 }
 
 const MAX_U64_NUMBER = 0x20000000000000;
@@ -43,7 +43,9 @@ function _serializeValue(major: MajorType, minor: MinorType, value: string): Cbo
   // Create the buffer from the value with left padding with 0.
   const length = 2 ** (minor - MinorType.Int8);
   value = value.slice(-length * 2).padStart(length * 2, "0");
-  const bytes = [(major << 5) + minor].concat(value.match(/../g)!.map(byte => parseInt(byte, 16)));
+  const bytes = [(major << 5) + minor].concat(
+    value.match(/../g)!.map((byte) => parseInt(byte, 16))
+  );
 
   return new Uint8Array(bytes).buffer as CborValue;
 }
@@ -90,7 +92,7 @@ function _serializeString(str: string) {
 
   return _concat(
     new Uint8Array(_serializeNumber(MajorType.TextString, str.length)),
-    new Uint8Array(utf8),
+    new Uint8Array(utf8)
   );
 }
 
@@ -120,7 +122,7 @@ export function tagged(tag: number, value: CborValue): CborValue {
       .slice(-length * 2)
       .padStart(length * 2, "0");
     const bytes = [(MajorType.Tag << 5) + minor].concat(
-      value.match(/../g)!.map(byte => parseInt(byte, 16))
+      value.match(/../g)!.map((byte) => parseInt(byte, 16))
     );
 
     return new Uint8Array(bytes).buffer as CborValue;
@@ -409,10 +411,7 @@ export function number(n: number): CborValue {
  * Encode a byte array. This is different than the `raw()` method.
  */
 export function bytes(bytes: ArrayBuffer): CborValue {
-  return _concat(
-    _serializeNumber(MajorType.ByteString, bytes.byteLength),
-    bytes,
-  );
+  return _concat(_serializeNumber(MajorType.ByteString, bytes.byteLength), bytes);
 }
 
 /**
@@ -426,27 +425,29 @@ export function string(str: string): CborValue {
  * Encode an array of cbor values.
  */
 export function array(items: CborValue[]): CborValue {
-  return _concat(
-    _serializeNumber(MajorType.Array, items.length),
-    ...items,
-  );
+  return _concat(_serializeNumber(MajorType.Array, items.length), ...items);
 }
 
 /**
  * Encode a map of key-value pairs. The keys are string, and the values are CBOR
  * encoded.
  */
-export function map(items: Map<string, CborValue> | { [key: string]: CborValue }): CborValue {
+export function map(
+  items: Map<string, CborValue> | { [key: string]: CborValue },
+  stable = false
+): CborValue {
   if (!(items instanceof Map)) {
     items = new Map(Object.entries(items));
   }
 
+  let entries = Array.from(items.entries());
+  if (stable) {
+    entries = entries.sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+  }
+
   return _concat(
     _serializeNumber(MajorType.Map, items.size),
-    ...Array.from(items.entries()).map(([k, v]) => _concat(
-      _serializeString(k),
-      v,
-    ))
+    ...entries.map(([k, v]) => _concat(_serializeString(k), v))
   );
 }
 

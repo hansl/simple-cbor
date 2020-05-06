@@ -11,7 +11,7 @@ test("json", () => {
     A: true,
     B: false,
     C: 123,
-    D: "hello"
+    D: "hello",
   });
 
   expect(_toHex(v)).toBe("a46141f56142f46143187b61446568656c6c6f");
@@ -24,7 +24,7 @@ test("json (self-describe)", () => {
     A: true,
     B: false,
     C: 123,
-    D: "hello"
+    D: "hello",
   });
 
   expect(_toHex(v)).toBe("d9d9f7a46141f56142f46143187b61446568656c6c6f");
@@ -37,7 +37,7 @@ test("complex (special encoder)", () => {
     A: true,
     B: false,
     C: 123,
-    D: "hello"
+    D: "hello",
   });
 
   expect(_toHex(v)).toBe("d9d9f7a46141f56142f46143187b61446568656c6c6f");
