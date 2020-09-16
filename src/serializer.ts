@@ -80,7 +80,7 @@ export class ToCborEncoder implements CborEncoder<{ toCBOR(): cbor.CborValue }> 
   readonly priority = -90;
 
   match(value: any) {
-    return typeof value == "object" && Object.getOwnPropertyNames(value).indexOf("toCBOR") != -1;
+    return typeof value == "object" && typeof value["toCBOR"] == "function";
   }
   encode(value: { toCBOR(): cbor.CborValue }): cbor.CborValue {
     return value.toCBOR();
